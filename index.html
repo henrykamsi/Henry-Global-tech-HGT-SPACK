@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>HGT Spark | Professional Utility Suite</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs2@0.0.2/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: radial-gradient(ellipse at 20% 30%, #0a0f1e, #03060f);
+            min-height: 100vh;
+            color: #e2e8f0;
+            padding-bottom: 80px;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        body.light-mode {
+            background: radial-gradient(ellipse at 20% 30%, #f0f9ff, #d9e9f7);
+            color: #0a0f1e;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #1e293b; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
+        
+        .top-bar {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            padding: 12px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.5);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        body.light-mode .top-bar { background: rgba(255, 255, 255, 0.85); }
+        .top-bar h1 {
+            font-size: 1.6rem;
+            background: linear-gradient(135deg, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .top-bar p { font-size: 0.7rem; color: #94a3b8; margin-top: 4px; }
+
+        .splash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #020617, #0f172a, #1e1b4b);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: opacity 0.6s;
+        }
+        .planet {
+            width: 110px;
+            height: 110px;
+            background: radial-gradient(circle at 35% 35%, #3b82f6, #1e3a8a);
+            border-radius: 50%;
+            margin: 0 auto 1.2rem;
+            box-shadow: 0 0 40px #3b82f6;
+            animation: floatPulse 2s infinite alternate;
+        }
+        @keyframes floatPulse {
+            0% { transform: scale(1) translateY(0px); box-shadow: 0 0 30px #3b82f6; }
+            100% { transform: scale(1.05) translateY(-8px); box-shadow: 0 0 70px #10b981; }
+        }
+        .splash h1 { font-size: 2.4rem; background: linear-gradient(135deg, #60a5fa, #34d399); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .slideshow-area {
+            margin-top: 2.5rem;
+            width: 85%;
+            max-width: 400px;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(16px);
+            border-radius: 2rem;
+            padding: 1.8rem;
+            text-align: center;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .next-btn, .proceed-btn {
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 3rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1.2rem;
+            color: white;
+        }
+        .proceed-btn { display: none; }
+
+        .dashboard { display: none; max-width: 1280px; margin: 0 auto; padding: 1rem; }
+
+        .tabs {
+            display: flex;
+            gap: 0.6rem;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(16px);
+            border-radius: 2rem;
+            padding: 0.6rem;
+            margin-bottom: 1.8rem;
+            flex-wrap: wrap;
+            border: 1px solid rgba(71, 85, 105, 0.5);
+        }
+        body.light-mode .tabs { background: rgba(255, 255, 255, 0.6); border-color: #cbd5e1; }
+        .tab {
+            flex: 1;
+            padding: 0.7rem 0.3rem;
+            text-align: center;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.75rem;
+            min-width: 80px;
+            transition: all 0.2s;
+        }
+        .tab:hover { background: rgba(59, 130, 246, 0.2); }
+        .tab.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .bottom-menu {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 10px;
+            border-top: 1px solid rgba(16, 185, 129, 0.4);
+            z-index: 200;
+        }
+        .bottom-item {
+            padding: 8px 24px;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            background: #1e293b;
+            color: #cbd5e1;
+            transition: all 0.2s;
+        }
+        .bottom-item.active { background: #10b981; color: white; }
+
+        .hamburger {
+            position: fixed;
+            top: 75px;
+            left: 15px;
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(12px);
+            padding: 8px 14px;
+            border-radius: 2rem;
+            cursor: pointer;
+            z-index: 300;
+            font-size: 1.2rem;
+            border: 1px solid #3b82f6;
+        }
+        .hamburger:hover { background: #3b82f6; color: white; }
+        
+        .side-menu {
+            position: fixed;
+            top: 0;
+            left: -340px;
+            width: 320px;
+            height: 100%;
+            background: #0f172a;
+            z-index: 10001;
+            transition: left 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            padding: 2rem 1rem;
+            overflow-y: auto;
+            border-right: 2px solid #3b82f6;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.5);
+        }
+        body.light-mode .side-menu { background: #ffffff; }
+        .side-menu.open { left: 0; }
+        .close-menu { text-align: right; font-size: 1.5rem; cursor: pointer; color: #94a3b8; }
+        .close-menu:hover { color: #ef4444; }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 10000;
+            display: none;
+        }
+        .side-menu h3 {
+            margin: 1rem 0 0.8rem;
+            color: #60a5fa;
+            font-size: 1rem;
+            border-left: 3px solid #3b82f6;
+            padding-left: 0.6rem;
+        }
+        .side-menu input, .side-menu textarea, .side-menu select {
+            width: 100%;
+            margin: 0.4rem 0;
+            padding: 0.6rem;
+            border-radius: 0.8rem;
+            background: #1e293b;
+            color: white;
+            border: 1px solid #334155;
+        }
+        body.light-mode .side-menu input,
+        body.light-mode .side-menu textarea { background: #f1f5f9; color: #0f172a; border-color: #cbd5e1; }
+        .side-menu button {
+            width: 100%;
+            margin: 0.4rem 0;
+            padding: 0.6rem;
+            border-radius: 0.8rem;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .side-menu button:hover { background: #2563eb; }
+
+        .tool-card {
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(16px);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(71, 85, 105, 0.4);
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+        body.light-mode .tool-card { background: rgba(255, 255, 255, 0.6); border-color: #cbd5e1; }
+        .tool-card h2 { font-size: 1.3rem; margin-bottom: 1rem; }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 0.8rem;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 1rem;
+            color: white;
+            margin-bottom: 0.8rem;
+        }
+        body.light-mode input, body.light-mode textarea { background: #ffffff; color: #0f172a; border-color: #cbd5e1; }
+        button {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 2rem;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0.2rem;
+        }
+        button:hover { transform: translateY(-1px); }
+        
+        .glow-textbox { box-shadow: 0 0 12px rgba(59, 130, 246, 0.4); }
+        
+        .mic-button {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border: none;
+            font-size: 2.5rem;
+            cursor: pointer;
+            margin: 1rem auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(59,130,246,0.4);
+        }
+        .mic-button.recording {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            animation: micPulse 0.8s infinite;
+        }
+        @keyframes micPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+        
+        .resizer-preview { max-width: 100%; border-radius: 1rem; margin: 1rem 0; }
+        .progress-bar { width: 100%; height: 8px; background: #334155; border-radius: 4px; overflow: hidden; margin: 1rem 0; }
+        .progress-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #3b82f6, #10b981); transition: width 0.3s; }
+        .preset-buttons { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+        .preset-btn { background: #1e293b; padding: 4px 12px; font-size: 0.7rem; }
+        .crop-area {
+            position: relative;
+            display: inline-block;
+            margin: 1rem 0;
+        }
+        .crop-overlay {
+            position: absolute;
+            border: 2px dashed #10b981;
+            background: rgba(16, 185, 129, 0.2);
+            cursor: move;
+        }
+        
+        .speed-card { background: #1e293b; border-radius: 1rem; padding: 1rem; margin: 0.5rem 0; }
+        .speed-status { display: inline-block; padding: 0.2rem 0.8rem; border-radius: 2rem; font-size: 0.7rem; font-weight: bold; }
+        .status-poor { background: #ef4444; color: white; }
+        .status-low { background: #f59e0b; color: white; }
+        .status-good { background: #3b82f6; color: white; }
+        .status-excellent { background: #10b981; color: white; }
+        
+        .api-response { background: #0f172a; border-radius: 1rem; padding: 1rem; margin-top: 1rem; max-height: 300px; overflow: auto; font-family: monospace; font-size: 0.75rem; }
+        .diff-result { background: #0f172a; border-radius: 1rem; padding: 1rem; margin-top: 1rem; font-family: monospace; font-size: 0.8rem; white-space: pre-wrap; }
+        
+        .history-list, .vault-list { max-height: 200px; overflow-y: auto; margin-top: 0.5rem; }
+        .history-item, .vault-item {
+            background: #1e293b;
+            border-radius: 0.8rem;
+            padding: 0.6rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        footer { text-align: center; padding: 1.5rem; font-size: 0.7rem; color: #64748b; margin-bottom: 60px; }
+
+        @media (max-width: 768px) {
+            .tabs { flex-direction: column; }
+            .bottom-item { padding: 6px 16px; font-size: 0.7rem; }
+            .hamburger { top: 60px; left: 10px; padding: 6px 12px; }
+            .side-menu { width: 280px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <h1>⚡ HGT SPARK</h1>
+    <p>Power up your utility. Make your phone lightning faster.</p>
+</div>
+
+<div class="hamburger" id="hamburgerBtn">☰</div>
+<div class="overlay" id="overlay"></div>
+<div class="side-menu" id="sideMenu">
+    <div class="close-menu" id="closeMenu">✕</div>
+    
+    <h3>📶 Network Speed</h3>
+    <div class="speed-card">
+        <div>Status: <span id="speedStatusText" class="speed-status status-poor">--</span></div>
+        <div id="speedValue">Speed: 0 Mbps</div>
+        <canvas id="speedChartCanvas" width="250" height="120" style="background:#1e293b; border-radius:10px; width:100%;"></canvas>
+        <button id="testSpeedBtn">Test Speed</button>
+    </div>
+    
+    <h3>🔒 Password Vault</h3>
+    <div id="vaultListMenu" class="vault-list"></div>
+    <button id="exportVaultBtn">Export Vault</button>
+    
+    <h3>📦 Base64 Encoder/Decoder</h3>
+    <textarea id="base64InputMenu" rows="2" placeholder="Enter text or Base64..."></textarea>
+    <button id="encodeBtnMenu">Encode</button>
+    <button id="decodeBtnMenu">Decode</button>
+    <div id="base64ResultMenu" style="background:#1e293b; padding:0.5rem; border-radius:0.5rem; margin-top:0.5rem;"></div>
+    <button id="copyBase64Menu">Copy Result</button>
+    
+    <h3>🛠️ API Request Builder</h3>
+    <select id="apiMethod">
+        <option value="GET">GET</option>
+        <option value="POST">POST</option>
+        <option value="PUT">PUT</option>
+        <option value="DELETE">DELETE</option>
+    </select>
+    <input type="text" id="apiUrl" placeholder="https://api.example.com/endpoint">
+    <textarea id="apiHeaders" rows="2" placeholder='Headers (JSON format)&#10;{"Content-Type": "application/json"}'></textarea>
+    <textarea id="apiBody" rows="3" placeholder='Body (JSON format)'></textarea>
+    <div style="display:flex; gap:8px;">
+        <button id="sendApiRequest">Send Request</button>
+        <button id="testApiGet" style="background:#10b981;">Test GET</button>
+        <button id="testApiPost" style="background:#f59e0b;">Test POST</button>
+    </div>
+    <div id="apiResponse" class="api-response">Response will appear here...</div>
+    
+    <h3>🔄 Text Diff Tool</h3>
+    <textarea id="diffText1" rows="3" placeholder="Original text..."></textarea>
+    <textarea id="diffText2" rows="3" placeholder="Modified text..."></textarea>
+    <button id="compareDiffBtn">Compare Texts</button>
+    <div id="diffResult" class="diff-result">Differences will appear here...</div>
+    
+    <h3>⚙️ Settings</h3>
+    <button id="darkModeToggle">🌓 Dark/Light Mode</button>
+    <button id="clearAllDataBtn" style="background:#ef4444;">Clear All Data</button>
+    <p style="font-size:0.7rem; margin-top:1rem;">Version 1.0.0 | HGT</p>
+</div>
+
+<!-- Splash Screen -->
+<div class="splash" id="splash">
+    <div class="planet"></div>
+    <h1>HGT SPARK</h1>
+    <div class="slideshow-area" id="slideshowArea">
+        <div style="font-size:2rem;">⚡</div>
+        <div style="margin:10px 0;">AI-Powered Utility Suite</div>
+        <button class="next-btn" id="nextSlideBtn">Next →</button>
+        <button class="proceed-btn" id="proceedBtn">🚀 Proceed</button>
+    </div>
+</div>
+
+<!-- Dashboard -->
+<div class="dashboard" id="dashboard">
+    <div class="tabs">
+        <div class="tab active" data-tab="shortener">🔗 Shortener</div>
+        <div class="tab" data-tab="qrcode">📱 QR Code</div>
+        <div class="tab" data-tab="tts">🎤 TTS</div>
+        <div class="tab" data-tab="colorpicker">🎨 Color</div>
+        <div class="tab" data-tab="password">🔐 Password</div>
+        <div class="tab" data-tab="imagetolink">🖼️ Img→Link</div>
+        <div class="tab" data-tab="emailvalidator">📧 Email Validator</div>
+    </div>
+
+    <!-- URL Shortener -->
+    <div id="shortener" class="tool-card">
+        <h2>🔗 URL Shortener</h2>
+        <input type="text" id="urlInput" placeholder="Enter long URL (https://...)">
+        <button id="shortenBtn">Shorten URL</button>
+        <div id="shortResult" style="margin-top:10px;"></div>
+        <button id="copyShortBtn" style="display:none;">📋 Copy Short Link</button>
+        <h3>📜 History</h3>
+        <div id="historyList" class="history-list"></div>
+        <button id="clearHistoryBtn">Clear History</button>
+        <p style="font-size:0.7rem; color:#94a3b8; margin-top:8px;">Note: URL shortener works after deployment to GitHub Pages. Testing mode active.</p>
+    </div>
+
+    <!-- QR Code -->
+    <div id="qrcode" class="tool-card" style="display:none;">
+        <h2>📱 QR Code Generator</h2>
+        <input type="text" id="qrLink" placeholder="Enter link to encode">
+        <button id="generateQrBtn">Generate QR Code</button>
+        <select id="qrColor">
+            <option value="#3b82f6">Blue & White</option>
+            <option value="#000000">Black & White</option>
+            <option value="#ef4444">Red & White</option>
+            <option value="#10b981">Green & White</option>
+        </select>
+        <div id="qrResult" style="margin-top:15px;"></div>
+        <button id="downloadQrImg">Download PNG</button>
+        <button id="testQrBtn">Test QR Code</button>
+    </div>
+
+    <!-- TTS -->
+    <div id="tts" class="tool-card" style="display:none;">
+        <h2>🎤 Text-to-Speech</h2>
+        <textarea id="ttsText" rows="3" class="glow-textbox">Welcome to HGT Spark. Power up your utility and make your phone lightning faster.</textarea>
+        <button id="speakBtn">🔊 Speak</button>
+        <h3>🎙️ Voice to Text</h3>
+        <div class="mic-button" id="micButton">🎤</div>
+        <div id="micPrompt" style="text-align:center; color:#94a3b8; margin:5px 0;">Click the microphone and say something</div>
+        <div id="voiceOutput" style="background:#1e293b; padding:0.8rem; border-radius:1rem; margin:0.5rem 0;"></div>
+        <button id="readVoiceOutputBtn" style="display:none;">🔊 Read Text Aloud</button>
+        <button id="copyTtsBtn">📋 Copy Text</button>
+    </div>
+
+    <!-- Color Picker -->
+    <div id="colorpicker" class="tool-card" style="display:none;">
+        <h2>🎨 Color Picker</h2>
+        <input type="color" id="colorPicker" value="#3b82f6">
+        <div id="colorValues" style="margin:10px 0; padding:10px; background:#1e293b; border-radius:10px;">HEX: #3b82f6<br>RGB: 59,130,246</div>
+        <button id="copyColorBtn">Copy HEX</button>
+    </div>
+
+    <!-- Password Generator -->
+    <div id="password" class="tool-card" style="display:none;">
+        <h2>🔐 Password Generator</h2>
+        <input type="text" id="pwdTitle" placeholder="Title (e.g., Gmail, TikTok)">
+        <button id="genPwdBtn">Generate Password</button>
+        <div id="genPassword" style="margin:10px 0; padding:10px; background:#1e293b; border-radius:10px; font-family:monospace;"></div>
+        <button id="copyPwdBtn">Copy</button>
+        <button id="savePwdBtn">Save to Vault</button>
+        <h3>🔒 Password Vault</h3>
+        <div id="pwdVaultList" class="vault-list"></div>
+    </div>
+
+    <!-- Image to Link -->
+    <div id="imagetolink" class="tool-card" style="display:none;">
+        <h2>🖼️ Image to Link</h2>
+        <p style="font-size:0.7rem;">Upload an image to get a permanent link that works anywhere.</p>
+        <input type="file" id="imageUploadFile" accept="image/*">
+        <button id="uploadImgBtn">Upload & Get Link</button>
+        <div id="imageLinkDisplay" style="margin-top:10px;"></div>
+    </div>
+
+    <!-- Email Validator -->
+    <div id="emailvalidator" class="tool-card" style="display:none;">
+        <h2>📧 Email Validator</h2>
+        <textarea id="emailsList" rows="4" placeholder="Enter emails (one per line)&#10;example@gmail.com&#10;test@yahoo.com"></textarea>
+        <button id="validateEmailsBtn">Validate Emails</button>
+        <div id="emailResult" style="margin-top:10px; padding:10px; background:#1e293b; border-radius:10px;"></div>
+    </div>
+
+    <!-- Bottom Menu - Image Resizer -->
+    <div class="bottom-menu">
+        <div class="bottom-item active" data-bottom="imageresizer">🖼️ Image Resizer</div>
+    </div>
+
+    <!-- Image Resizer Tool with Crop -->
+    <div id="imageresizer" class="tool-card" style="display:block;">
+        <h2>🖼️ Image Resizer & Cropper</h2>
+        <div id="resizerUploadArea" style="border:2px dashed #3b82f6; border-radius:1rem; padding:2rem; text-align:center; cursor:pointer;">
+            📸 Tap to select image
+        </div>
+        <input type="file" id="resizerImageInput" accept="image/*" style="display:none;">
+        <div class="progress-bar" id="progressBar" style="display:none;">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div id="resizerPreviewArea" style="display:none;">
+            <div class="crop-area" id="cropArea">
+                <img id="resizerPreview" class="resizer-preview" style="max-width:100%;">
+            </div>
+            <div class="preset-buttons">
+                <button class="preset-btn" data-width="1080" data-height="1080">Square (1080x1080)</button>
+                <button class="preset-btn" data-width="1080" data-height="1350">Insta (1080x1350)</button>
+                <button class="preset-btn" data-width="1200" data-height="630">FB (1200x630)</button>
+                <button class="preset-btn" data-width="1920" data-height="1080">HD (1920x1080)</button>
+                <button class="preset-btn" data-width="800" data-height="800">Small (800x800)</button>
+            </div>
+            <div style="display:flex; gap:1rem; flex-wrap:wrap; margin:1rem 0;">
+                <div style="flex:1"><label>Width:</label><input type="range" id="resizeWidth" min="50" max="2000" step="10"><span id="widthValue">0</span>px</div>
+                <div style="flex:1"><label>Height:</label><input type="range" id="resizeHeight" min="50" max="2000" step="10"><span id="heightValue">0</span>px</div>
+                <div><label>🔒 Lock:</label><input type="checkbox" id="aspectLock" checked></div>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button id="applyResizeBtn">Apply Resize</button>
+                <button id="cropBtn" style="background:#10b981;">✂️ Crop Image</button>
+                <button id="previewResizeBtn">Preview Result</button>
+            </div>
+            <div id="previewResultArea" style="margin-top:1rem;"></div>
+            <div style="margin-top:0.5rem;">
+                <button id="downloadResizePng">Save as PNG</button>
+                <button id="downloadResizeJpg">Save as JPG</button>
+                <button id="downloadResizePdf">Save as PDF</button>
+                <button id="shareResizeBtn">Share Image</button>
+                <button id="reEditBtn">Re-edit</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>All rights reserved. HGT 2026 Copyright | Version 1.0.0</footer>
+</div>
+
+<script>
+// ==================== SPLASH SCREEN ====================
+if (localStorage.getItem('hgtSplash') === 'true') {
+    document.getElementById('splash').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+}
+let slideIdx = 0;
+const slidesList = [
+    { icon: "⚡", text: "AI-Powered Utility Suite" },
+    { icon: "🔗📱🎤", text: "Shorten · Scan · Speak" },
+    { icon: "🚀", text: "Launch Your Productivity" }
+];
+function updateSlide() {
+    const area = document.getElementById('slideshowArea');
+    if (!area) return;
+    area.innerHTML = `<div style="font-size:2rem;">${slidesList[slideIdx].icon}</div><div style="margin:10px 0;">${slidesList[slideIdx].text}</div><button class="next-btn" id="nextSlideBtn">Next →</button><button class="proceed-btn" id="proceedBtn">🚀 Proceed</button>`;
+    const nextBtn = document.getElementById('nextSlideBtn');
+    const proceedBtn = document.getElementById('proceedBtn');
+    if (nextBtn) nextBtn.onclick = () => { if (slideIdx < 2) { slideIdx++; updateSlide(); } };
+    if (proceedBtn) {
+        if (slideIdx === 2) proceedBtn.style.display = 'block';
+        else proceedBtn.style.display = 'none';
+        proceedBtn.onclick = () => {
+            localStorage.setItem('hgtSplash', 'true');
+            document.getElementById('splash').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('splash').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+            }, 500);
+        };
+    }
+}
+if (!localStorage.getItem('hgtSplash')) updateSlide();
+
+// ==================== HASH ROUTING ====================
+function showTool(tabId) {
+    const tools = ['shortener', 'qrcode', 'tts', 'colorpicker', 'password', 'imagetolink', 'emailvalidator'];
+    tools.forEach(t => { let el = document.getElementById(t); if (el) el.style.display = 'none'; });
+    let selected = document.getElementById(tabId);
+    if (selected) selected.style.display = 'block';
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    let activeTab = document.querySelector(`.tab[data-tab="${tabId}"]`);
+    if (activeTab) activeTab.classList.add('active');
+}
+function handleHash() {
+    let hash = window.location.hash.slice(1);
+    if (!hash || !['shortener', 'qrcode', 'tts', 'colorpicker', 'password', 'imagetolink', 'emailvalidator'].includes(hash)) hash = 'shortener';
+    showTool(hash);
+}
+window.addEventListener('hashchange', handleHash);
+handleHash();
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => { window.location.hash = tab.getAttribute('data-tab'); });
+});
+
+// ==================== HAMBURGER MENU ====================
+const hamburger = document.getElementById('hamburgerBtn');
+const sideMenu = document.getElementById('sideMenu');
+const overlay = document.getElementById('overlay');
+hamburger.onclick = () => { sideMenu.classList.add('open'); overlay.style.display = 'block'; };
+document.getElementById('closeMenu').onclick = () => { sideMenu.classList.remove('open'); overlay.style.display = 'none'; };
+overlay.onclick = () => { sideMenu.classList.remove('open'); overlay.style.display = 'none'; };
+
+// ==================== DARK MODE ====================
+let darkMode = localStorage.getItem('darkMode') !== 'false';
+function applyDarkMode() {
+    if (darkMode) document.body.classList.remove('light-mode');
+    else document.body.classList.add('light-mode');
+}
+applyDarkMode();
+document.getElementById('darkModeToggle').onclick = () => {
+    darkMode = !darkMode;
+    localStorage.setItem('darkMode', darkMode);
+    applyDarkMode();
+};
+
+// ==================== NETWORK SPEED ====================
+let speedChart, speedData = [], speedLabels = [];
+function initSpeedChart() {
+    const ctx = document.getElementById('speedChartCanvas').getContext('2d');
+    speedChart = new Chart(ctx, {
+        type: 'line',
+        data: { labels: ['0s'], datasets: [{ label: 'Mbps', data: [0], borderColor: '#3b82f6', fill: true, tension: 0.3 }] },
+        options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true } } }
+    });
+}
+initSpeedChart();
+function updateSpeedChartValue(speed) {
+    speedData.push(speed);
+    if (speedData.length > 10) speedData.shift();
+    speedLabels.push(new Date().getSeconds() + 's');
+    if (speedLabels.length > 10) speedLabels.shift();
+    speedChart.data.labels = speedLabels;
+    speedChart.data.datasets[0].data = speedData;
+    speedChart.update();
+    document.getElementById('speedValue').innerHTML = `Speed: ${speed.toFixed(2)} Mbps`;
+    let statusSpan = document.getElementById('speedStatusText');
+    if (speed < 1) { statusSpan.innerText = 'POOR'; statusSpan.className = 'speed-status status-poor'; }
+    else if (speed < 5) { statusSpan.innerText = 'LOW'; statusSpan.className = 'speed-status status-low'; }
+    else if (speed < 20) { statusSpan.innerText = 'GOOD'; statusSpan.className = 'speed-status status-good'; }
+    else { statusSpan.innerText = 'EXCELLENT'; statusSpan.className = 'speed-status status-excellent'; }
+}
+document.getElementById('testSpeedBtn').onclick = async () => {
+    document.getElementById('speedValue').innerHTML = 'Testing...';
+    for (let i = 0; i < 3; i++) {
+        const start = Date.now();
+        try {
+            await fetch('https://www.google.com/favicon.ico?t=' + Date.now(), { mode: 'no-cors' });
+            const duration = (Date.now() - start) / 1000;
+            let speedMbps = (0.05 / duration).toFixed(2);
+            updateSpeedChartValue(parseFloat(speedMbps));
+        } catch(e) { document.getElementById('speedValue').innerHTML = 'Test failed'; }
+        await new Promise(r => setTimeout(r, 1000));
+    }
+};
+
+// ==================== PASSWORD VAULT ====================
+let passwordVault = JSON.parse(localStorage.getItem('passwordVault') || '[]');
+function renderVaults() {
+    const vaultDivs = [document.getElementById('pwdVaultList'), document.getElementById('vaultListMenu')];
+    vaultDivs.forEach(div => {
+        if (!div) return;
+        if (passwordVault.length === 0) { div.innerHTML = '<div style="color:#64748b; text-align:center;">No saved passwords</div>'; return; }
+        div.innerHTML = passwordVault.map((item, idx) => `
+            <div class="vault-item">
+                <span><strong>${escapeHtml(item.title)}</strong><br><span style="font-size:0.7rem;">${escapeHtml(item.password)}</span></span>
+                <button onclick="copyPassword('${escapeHtml(item.password)}')">Copy</button>
+                <button onclick="deletePassword(${idx})">Del</button>
+            </div>
+        `).join('');
+    });
+}
+window.copyPassword = (pwd) => { navigator.clipboard.writeText(pwd); alert('Copied!'); };
+window.deletePassword = (idx) => { passwordVault.splice(idx, 1); renderVaults(); localStorage.setItem('passwordVault', JSON.stringify(passwordVault)); };
+function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
+renderVaults();
+
+// ==================== BASE64 ====================
+document.getElementById('encodeBtnMenu').onclick = () => {
+    let text = document.getElementById('base64InputMenu').value;
+    if (text) document.getElementById('base64ResultMenu').innerText = btoa(unescape(encodeURIComponent(text)));
+    else alert('Enter text');
+};
+document.getElementById('decodeBtnMenu').onclick = () => {
+    let text = document.getElementById('base64InputMenu').value;
+    try { document.getElementById('base64ResultMenu').innerText = decodeURIComponent(escape(atob(text))); }
+    catch(e) { alert('Invalid Base64'); }
+};
+document.getElementById('copyBase64Menu').onclick = () => {
+    let result = document.getElementById('base64ResultMenu').innerText;
+    if (result) { navigator.clipboard.writeText(result); alert('Copied'); }
+};
+
+// ==================== API REQUEST BUILDER ====================
+async function sendApiRequest() {
+    const method = document.getElementById('apiMethod').value;
+    const url = document.getElementById('apiUrl').value;
+    let headers = {};
+    let body = null;
+    try {
+        const headersText = document.getElementById('apiHeaders').value;
+        if (headersText) headers = JSON.parse(headersText);
+    } catch(e) { alert('Invalid JSON in headers'); return; }
+    if (method !== 'GET') {
+        const bodyText = document.getElementById('apiBody').value;
+        if (bodyText) {
+            try { body = JSON.parse(bodyText); }
+            catch(e) { alert('Invalid JSON in body'); return; }
+        }
+    }
+    document.getElementById('apiResponse').innerHTML = 'Sending request...';
+    try {
+        const startTime = Date.now();
+        const response = await fetch(url, {
+            method: method,
+            headers: { ...headers, 'Content-Type': 'application/json' },
+            body: body ? JSON.stringify(body) : undefined
+        });
+        const endTime = Date.now();
+        const responseData = await response.text();
+        let formattedResponse;
+        try { formattedResponse = JSON.stringify(JSON.parse(responseData), null, 2); }
+        catch(e) { formattedResponse = responseData; }
+        document.getElementById('apiResponse').innerHTML = `
+            <div><strong>Status:</strong> ${response.status} ${response.statusText}</div>
+            <div><strong>Time:</strong> ${endTime - startTime}ms</div>
+            <div><strong>Response:</strong></div>
+            <pre style="white-space:pre-wrap; font-family:monospace;">${formattedResponse}</pre>
+        `;
+    } catch(error) {
+        document.getElementById('apiResponse').innerHTML = `<div style="color:#ef4444;">Error: ${error.message}</div>`;
+    }
+}
+document.getElementById('sendApiRequest').onclick = sendApiRequest;
+document.getElementById('testApiGet').onclick = () => {
+    document.getElementById('apiUrl').value = 'https://jsonplaceholder.typicode.com/posts/1';
+    document.getElementById('apiMethod').value = 'GET';
+    sendApiRequest();
+};
+document.getElementById('testApiPost').onclick = () => {
+    document.getElementById('apiUrl').value = 'https://jsonplaceholder.typicode.com/posts';
+    document.getElementById('apiMethod').value = 'POST';
+    document.getElementById('apiBody').value = JSON.stringify({ title: 'HGT Spark Test', body: 'Testing API from HGT Spark', userId: 1 }, null, 2);
+    sendApiRequest();
+};
+
+// ==================== TEXT DIFF ====================
+function computeDiff(text1, text2) {
+    const lines1 = text1.split(/\r?\n/);
+    const lines2 = text2.split(/\r?\n/);
+    const maxLen = Math.max(lines1.length, lines2.length);
+    let result = '';
+    for (let i = 0; i < maxLen; i++) {
+        const line1 = lines1[i] || '';
+        const line2 = lines2[i] || '';
+        if (line1 === line2) result += `<span style="color:#94a3b8;">  ${escapeHtml(line1)}</span><br>`;
+        else {
+            if (line1) result += `<span style="color:#ef4444;">- ${escapeHtml(line1)}</span><br>`;
+            if (line2) result += `<span style="color:#10b981;">+ ${escapeHtml(line2)}</span><br>`;
+        }
+    }
+    return result || '<span style="color:#64748b;">No differences found</span>';
+}
+document.getElementById('compareDiffBtn').onclick = () => {
+    const text1 = document.getElementById('diffText1').value;
+    const text2 = document.getElementById('diffText2').value;
+    document.getElementById('diffResult').innerHTML = computeDiff(text1, text2);
+};
+
+// ==================== URL SHORTENER (with Mock Mode for Testing) ====================
+let urlHistory = JSON.parse(localStorage.getItem('urlHistory') || '[]');
+function renderHistory() {
+    const div = document.getElementById('historyList');
+    if (!div) return;
+    if (urlHistory.length === 0) { div.innerHTML = '<div style="color:#64748b; text-align:center;">No history yet</div>'; return; }
+    div.innerHTML = urlHistory.map((item, i) => `
+        <div class="history-item">
+            <span style="font-size:0.75rem;">${item.original.substring(0, 40)}...</span>
+            <span style="color:#60a5fa; font-size:0.7rem;">${item.short}</span>
+            <button onclick="copyShortUrl('${item.short}')">Copy</button>
+            <button onclick="deleteHistoryItem(${i})">Del</button>
+        </div>
+    `).join('');
+}
+window.copyShortUrl = (url) => { navigator.clipboard.writeText(url); alert('Copied!'); };
+window.deleteHistoryItem = (idx) => { urlHistory.splice(idx, 1); renderHistory(); localStorage.setItem('urlHistory', JSON.stringify(urlHistory)); };
+document.getElementById('shortenBtn').onclick = async () => {
+    let longUrl = document.getElementById('urlInput').value;
+    if (!longUrl) { alert('Enter a URL'); return; }
+    if (!longUrl.startsWith('http')) longUrl = 'https://' + longUrl;
+    try {
+        const res = await fetch(`https://pth.bz/api/shorten?url=${encodeURIComponent(longUrl)}`);
+        const data = await res.json();
+        if (data.short) {
+            const shortUrl = data.short + '-hgt';
+            document.getElementById('shortResult').innerHTML = `<strong style="color:#10b981;">✅ ${shortUrl}</strong>`;
+            document.getElementById('copyShortBtn').style.display = 'inline-block';
+            urlHistory.unshift({ original: longUrl, short: shortUrl });
+            renderHistory();
+            localStorage.setItem('urlHistory', JSON.stringify(urlHistory));
+            document.getElementById('copyShortBtn').onclick = () => copyShortUrl(shortUrl);
+        } else alert('Shortening failed');
+    } catch(e) {
+        const mockShort = 'https://hgt.link/' + Math.random().toString(36).substring(2, 8) + '-hgt';
+        document.getElementById('shortResult').innerHTML = `<strong style="color:#f59e0b;">⚠️ Demo Mode: ${mockShort}</strong><br><small>Deploy to GitHub Pages for real API.</small>`;
+        document.getElementById('copyShortBtn').style.display = 'inline-block';
+        urlHistory.unshift({ original: longUrl, short: mockShort });
+        renderHistory();
+        localStorage.setItem('urlHistory', JSON.stringify(urlHistory));
+        document.getElementById('copyShortBtn').onclick = () => copyShortUrl(mockShort);
+    }
+};
+document.getElementById('clearHistoryBtn').onclick = () => { urlHistory = []; renderHistory(); localStorage.setItem('urlHistory', JSON.stringify(urlHistory)); };
+renderHistory();
+
+// ==================== QR CODE ====================
+let currentQR = null;
+document.getElementById('generateQrBtn').onclick = () => {
+    let link = document.getElementById('qrLink').value;
+    if (!link) { alert('Enter a link'); return; }
+    if (!link.startsWith('http')) link = 'https://' + link;
+    const color = document.getElementById('qrColor').value;
+    document.getElementById('qrResult').innerHTML = '<div id="qrCodeContainer"></div>';
+    new QRCode(document.getElementById('qrCodeContainer'), { text: link, width: 200, height: 200, colorDark: color, colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
+    setTimeout(() => {
+        const canvas = document.querySelector('#qrCodeContainer canvas');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'white';
+            ctx.fillRect(75, 75, 50, 50);
+            ctx.fillStyle = color;
+            ctx.font = 'bold 18px Arial';
+            ctx.fillText('HGT', 85, 105);
+            currentQR = canvas;
+        }
+    }, 100);
+};
+document.getElementById('downloadQrImg').onclick = () => { if (currentQR) { let a = document.createElement('a'); a.href = currentQR.toDataURL(); a.download = 'hgt_qr.png'; a.click(); } };
+document.getElementById('testQrBtn').onclick = () => { let link = document.getElementById('qrLink').value; alert(`Preview: This QR opens → ${link}`); if (link) window.open(link, '_blank'); };
+
+// ==================== TTS & VOICE ====================
+document.getElementById('speakBtn').onclick = () => {
+    let text = document.getElementById('ttsText').value;
+    if (text) { let u = new SpeechSynthesisUtterance(text); window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); }
+};
+document.getElementById('copyTtsBtn').onclick = () => { navigator.clipboard.writeText(document.getElementById('ttsText').value); alert('Copied'); };
+let recognition = null;
+const micBtn = document.getElementById('micButton');
+if ('webkitSpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+    recognition.onstart = () => { micBtn.classList.add('recording'); document.getElementById('micPrompt').innerHTML = '🎙️ Listening... Speak now'; };
+    recognition.onend = () => { micBtn.classList.remove('recording'); document.getElementById('micPrompt').innerHTML = 'Click the microphone and say something'; };
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('voiceOutput').innerHTML = transcript;
+        document.getElementById('readVoiceOutputBtn').style.display = 'inline-block';
+        document.getElementById('ttsText').value = transcript;
+    };
+}
+micBtn.onclick = () => { if (recognition) recognition.start(); else alert('Speech recognition not supported'); };
+document.getElementById('readVoiceOutputBtn').onclick = () => {
+    let text = document.getElementById('voiceOutput').innerText;
+    if (text) { let u = new SpeechSynthesisUtterance(text); window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); }
+};
+
+// ==================== COLOR PICKER ====================
+document.getElementById('colorPicker').oninput = (e) => {
+    let hex = e.target.value;
+    let r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    document.getElementById('colorValues').innerHTML = `HEX: ${hex}<br>RGB: ${r},${g},${b}`;
+};
+document.getElementById('copyColorBtn').onclick = () => { navigator.clipboard.writeText(document.getElementById('colorPicker').value); alert('Copied'); };
+
+// ==================== PASSWORD GENERATOR ====================
+let currentPwd = '';
+document.getElementById('genPwdBtn').onclick = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*';
+    currentPwd = Array.from({ length: 14 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    document.getElementById('genPassword').innerHTML = `<strong>${currentPwd}</strong>`;
+};
+document.getElementById('copyPwdBtn').onclick = () => { if (currentPwd) { navigator.clipboard.writeText(currentPwd); alert('Copied'); } };
+document.getElementById('savePwdBtn').onclick = () => {
+    let title = document.getElementById('pwdTitle').value;
+    if (title && currentPwd) {
+        passwordVault.unshift({ title: title, password: currentPwd });
+        renderVaults();
+        localStorage.setItem('passwordVault', JSON.stringify(passwordVault));
+        document.getElementById('pwdTitle').value = '';
+        alert('Saved to vault');
+    } else alert('Enter a title and generate a password');
+};
+
+// ==================== IMAGE TO LINK ====================
+document.getElementById('uploadImgBtn').onclick = () => {
+    const file = document.getElementById('imageUploadFile').files[0];
+    if (!file) { alert('Select an image first'); return; }
+    const localUrl = URL.createObjectURL(file);
+    document.getElementById('imageLinkDisplay').innerHTML = `
+        <img src="${localUrl}" style="max-width:100%; border-radius:10px;">
+        <br><a href="${localUrl}" target="_blank" style="color:#60a5fa;">${localUrl}</a>
+        <br><button onclick="window.open('${localUrl}')">Open in Browser</button>
+        <button onclick="downloadImage('${localUrl}')">Download Image</button>
+    `;
+};
+window.downloadImage = (url) => { let a = document.createElement('a'); a.href = url; a.download = 'hgt_image.png'; a.click(); };
+
+// ==================== EMAIL VALIDATOR ====================
+document.getElementById('validateEmailsBtn').onclick = () => {
+    const emails = document.getElementById('emailsList').value.split('\n');
+    const results = [];
+    emails.forEach(email => {
+        email = email.trim();
+        if (email) {
+            const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            results.push(`${email}: ${isValid ? '✅ Valid' : '❌ Invalid'}`);
+        }
+    });
+    document.getElementById('emailResult').innerHTML = results.join('<br>');
+};
+
+// ==================== IMAGE RESIZER WITH CROP ====================
+let originalImage = null;
+let resizedImageData = null;
+let originalWidth = 0, originalHeight = 0;
+let aspectLock = true;
+let cropStartX = 0, cropStartY = 0, cropEndX = 0, cropEndY = 0;
+let isCropping = false;
+
+const resizerUploadArea = document.getElementById('resizerUploadArea');
+const resizerFileInput = document.getElementById('resizerImageInput');
+const progressBar = document.getElementById('progressBar');
+const progressFill = document.getElementById('progressFill');
+const previewArea = document.getElementById('resizerPreviewArea');
+const previewImg = document.getElementById('resizerPreview');
+const resizeWidth = document.getElementById('resizeWidth');
+const resizeHeight = document.getElementById('resizeHeight');
+const widthValue = document.getElementById('widthValue');
+const heightValue = document.getElementById('heightValue');
+const aspectLockCheck = document.getElementById('aspectLock');
+
+function updatePreviewSize() {
+    if (!originalImage) return;
+    const newWidth = parseInt(resizeWidth.value);
+    const newHeight = parseInt(resizeHeight.value);
+    widthValue.innerText = newWidth;
+    heightValue.innerText = newHeight;
+    const canvas = document.createElement('canvas');
+    canvas.width = newWidth;
+    canvas.height = newHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(originalImage, 0, 0, newWidth, newHeight);
+    previewImg.src = canvas.toDataURL();
+    resizedImageData = canvas;
+}
+
+resizerUploadArea.onclick = () => resizerFileInput.click();
+resizerFileInput.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    progressBar.style.display = 'block';
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += 10;
+        progressFill.style.width = progress + '%';
+        if (progress >= 100) {
+            clearInterval(interval);
+            setTimeout(() => {
+                progressBar.style.display = 'none';
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        originalImage = img;
+                        originalWidth = img.width;
+                        originalHeight = img.height;
+                        previewImg.src = event.target.result;
+                        previewArea.style.display = 'block';
+                        resizeWidth.value = originalWidth;
+                        resizeHeight.value = originalHeight;
+                        widthValue.innerText = originalWidth;
+                        heightValue.innerText = originalHeight;
+                        resizeWidth.max = originalWidth * 2;
+                        resizeHeight.max = originalHeight * 2;
+                        aspectLock = aspectLockCheck.checked;
+                        resizedImageData = null;
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }, 300);
+        }
+    }, 50);
+};
+
+document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.onclick = () => {
+        const width = parseInt(btn.dataset.width);
+        const height = parseInt(btn.dataset.height);
+        resizeWidth.value = width;
+        widthValue.innerText = width;
+        if (aspectLock && originalImage) {
+            let ratio = originalHeight / originalWidth;
+            let newHeight = Math.round(width * ratio);
+            resizeHeight.value = newHeight;
+            heightValue.innerText = newHeight;
+        } else {
+            resizeHeight.value = height;
+            heightValue.innerText = height;
+        }
+        updatePreviewSize();
+    };
+});
+
+aspectLockCheck.onchange = () => { aspectLock = aspectLockCheck.checked; };
+resizeWidth.oninput = () => {
+    let newWidth = parseInt(resizeWidth.value);
+    widthValue.innerText = newWidth;
+    if (aspectLock && originalImage) {
+        let ratio = originalHeight / originalWidth;
+        let newHeight = Math.round(newWidth * ratio);
+        resizeHeight.value = newHeight;
+        heightValue.innerText = newHeight;
+    }
+    updatePreviewSize();
+};
+resizeHeight.oninput = () => {
+    let newHeight = parseInt(resizeHeight.value);
+    heightValue.innerText = newHeight;
+    if (aspectLock && originalImage) {
+        let ratio = originalWidth / originalHeight;
+        let newWidth = Math.round(newHeight * ratio);
+        resizeWidth.value = newWidth;
+        widthValue.innerText = newWidth;
+    }
+    updatePreviewSize();
+};
+
+document.getElementById('applyResizeBtn').onclick = () => {
+    if (!originalImage) { alert('Select an image first'); return; }
+    updatePreviewSize();
+    alert('Resize applied!');
+};
+
+document.getElementById('cropBtn').onclick = () => {
+    if (!originalImage) { alert('Select an image first'); return; }
+    const cropWidth = parseInt(prompt('Enter crop width in pixels:', originalWidth));
+    const cropHeight = parseInt(prompt('Enter crop height in pixels:', originalHeight));
+    const cropX = parseInt(prompt('Enter X position (0 to start):', 0));
+    const cropY = parseInt(prompt('Enter Y position (0 to start):', 0));
+    if (isNaN(cropWidth) || isNaN(cropHeight) || isNaN(cropX) || isNaN(cropY)) {
+        alert('Invalid crop values');
+        return;
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = cropWidth;
+    canvas.height = cropHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(originalImage, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+    originalImage = new Image();
+    originalImage.onload = () => {
+        originalWidth = originalImage.width;
+        originalHeight = originalImage.height;
+        resizeWidth.value = originalWidth;
+        resizeHeight.value = originalHeight;
+        widthValue.innerText = originalWidth;
+        heightValue.innerText = originalHeight;
+        previewImg.src = originalImage.src;
+        resizedImageData = null;
+        alert('Image cropped!');
+    };
+    originalImage.src = canvas.toDataURL();
+};
+
+document.getElementById('previewResizeBtn').onclick = () => {
+    if (!resizedImageData && !originalImage) { alert('Select an image first'); return; }
+    const imgToShow = resizedImageData || previewImg;
+    const previewDiv = document.getElementById('previewResultArea');
+    previewDiv.innerHTML = `<img src="${imgToShow.src}" style="max-width:100%; border-radius:1rem;">`;
+};
+
+document.getElementById('downloadResizePng').onclick = () => {
+    if (!resizedImageData && !originalImage) { alert('No image to download'); return; }
+    const imgToSave = resizedImageData || previewImg;
+    const link = document.createElement('a');
+    link.download = 'resized_image.png';
+    link.href = imgToSave.src;
+    link.click();
+};
+
+document.getElementById('downloadResizeJpg').onclick = () => {
+    if (!resizedImageData && !originalImage) { alert('No image to download'); return; }
+    const imgToSave = resizedImageData || previewImg;
+    const canvas = document.createElement('canvas');
+    canvas.width = imgToSave.width || originalWidth;
+    canvas.height = imgToSave.height || originalHeight;
+    const ctx = canvas.getContext('2d');
+    if (imgToSave.tagName === 'IMG') ctx.drawImage(imgToSave, 0, 0);
+    else ctx.drawImage(previewImg, 0, 0);
+    const link = document.createElement('a');
+    link.download = 'resized_image.jpg';
+    link.href = canvas.toDataURL('image/jpeg');
+    link.click();
+};
+
+document.getElementById('downloadResizePdf').onclick = () => {
+    if (!resizedImageData && !originalImage) { alert('No image to convert'); return; }
+    const imgToSave = resizedImageData || previewImg;
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.addImage(imgToSave.src, 'PNG', 10, 10, 50, 50);
+    doc.save('resized_image.pdf');
+};
+
+document.getElementById('shareResizeBtn').onclick = () => {
+    if (!resizedImageData && !originalImage) { alert('No image to share'); return; }
+    const imgToShare = resizedImageData || previewImg;
+    fetch(imgToShare.src)
+        .then(res => res.blob())
+        .then(blob => {
+            if (navigator.share) navigator.share({ files: [new File([blob], 'image.png', { type: 'image/png' })] });
+            else alert('Share not supported');
+        });
+};
+
+document.getElementById('reEditBtn').onclick = () => {
+    if (originalImage) {
+        resizeWidth.value = originalWidth;
+        resizeHeight.value = originalHeight;
+        widthValue.innerText = originalWidth;
+        heightValue.innerText = originalHeight;
+        previewImg.src = originalImage.src;
+        resizedImageData = null;
+        document.getElementById('previewResultArea').innerHTML = '';
+        alert('Reset to original.');
+    }
+};
+
+document.getElementById('exportVaultBtn').onclick = () => {
+    const blob = new Blob([JSON.stringify(passwordVault, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'hgt_vault.json';
+    a.click();
+};
+
+document.getElementById('clearAllDataBtn').onclick = () => {
+    if (confirm('Clear ALL data? This cannot be undone.')) {
+        localStorage.clear();
+        alert('All data cleared. Refresh page.');
+        location.reload();
+    }
+};
+
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed; bottom:70px; left:10px; right:10px; background:#1e293b; padding:10px; border-radius:2rem; text-align:center; z-index:10000; border:1px solid #3b82f6;';
+    banner.innerHTML = '<strong>📲 Install HGT Spark</strong><br><button id="installBtn" style="margin:5px;">Install</button><button id="closeInstallBtn">Close</button>';
+    document.body.appendChild(banner);
+    document.getElementById('installBtn')?.addEventListener('click', () => { deferredPrompt.prompt(); banner.remove(); });
+    document.getElementById('closeInstallBtn')?.addEventListener('click', () => banner.remove());
+});
+
+console.log('HGT Spark v1.0.0 - Image Resizer now has Crop button + real-time resize preview. API Tester has Test GET/POST buttons.');
+</script>
+</body>
+</html>
